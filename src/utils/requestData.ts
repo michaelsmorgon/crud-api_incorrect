@@ -1,10 +1,11 @@
 import { IncomingMessage } from 'http';
 import { UserInfo } from '../users/constants';
-import { ErrorMessages } from './constants';
+import { ErrorMessages, HTTPStatusCodes } from './constants';
+import ManualError from '../error/manualError';
 
 const BASE_URL = '/api/users';
 const URL_WITH_ID = /^\/api\/users\/[\w-]*$/g;
-const UUID_MATCH = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/;
+const UUID_MATCH = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[4][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
 export const isUrlCorrect = (url: string): boolean => {
   const urlMatch = url.match(URL_WITH_ID);
@@ -18,7 +19,6 @@ export const getId = (url: string): string | null => {
   }
  
   const id = url.replace(`${BASE_URL}/`, '');
- 
   if (id.match(UUID_MATCH)) {
     return id ;
   }
@@ -32,10 +32,15 @@ export const getBody = async (req: IncomingMessage): Promise<UserInfo> => {
     req.on('data', (chunk) => { rawData += chunk; })
       .on('end', () => {
         try {
-          const parsedData = JSON.parse(rawData);
+          const parsedData = JSON.parse(rawData) as UserInfo;
+          if (parsedData.hasOwnProperty('age')
+            || !parsedData.hasOwnProperty('username')
+            || !parsedData.hasOwnProperty('hobbies')) {
+            throw new ManualError(HTTPStatusCodes.BAD_REQUEST, ErrorMessages.INVALID_DATA);
+          }
           res(parsedData);
-        } catch {
-          rej();
+        } catch (error) {
+          rej(new ManualError(HTTPStatusCodes.BAD_REQUEST, ErrorMessages.INVALID_DATA));
         }
       });
   });

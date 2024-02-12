@@ -1,5 +1,7 @@
-import { User } from './constants';
-import { ErrorMessages } from '../utils/constants';
+import { v4 } from 'uuid';
+import { User, UserInfo } from './constants';
+import { ErrorMessages, HTTPStatusCodes } from '../utils/constants';
+import ManualError from '../error/manualError';
 
 export class UserStore {
   constructor(private userList: User[]) {}
@@ -15,7 +17,16 @@ export class UserStore {
     console.log(`Request method: GET. Id: ${id}`);
     return new Promise((res, rej) => {
       const user = this.userList.find((user) => user.id === id);
-      user ? res(user) : rej(new Error(ErrorMessages.ID_NOT_FOUND));
+      user ? res(user) : rej(new ManualError(HTTPStatusCodes.NOT_FOUND, ErrorMessages.ID_NOT_FOUND));
+    });
+  }
+
+  async create(user: UserInfo): Promise<User> {
+    console.log(`Request method: POST. INFO: ${JSON.stringify(user)}`);
+    return new Promise((res) => {
+      const newUser = { ...user, id: v4() };
+      this.userList.push(newUser);
+      res(newUser);
     });
   }
 }
