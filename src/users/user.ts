@@ -35,7 +35,7 @@ export class UserStore {
     return new Promise((res, rej) => {
       const userForDeletion = this.userList.find((user) => user.id === id);
       if (userForDeletion) {
-        this.userList = this.userList.filter((data) => data.id === id);
+        this.userList = this.userList.filter((data) => data.id !== id);
         res('Successfully deleted');
       }
       rej(new ManualError(HTTPStatusCodes.NOT_FOUND, ErrorMessages.ID_NOT_FOUND));
@@ -47,11 +47,10 @@ export class UserStore {
     return new Promise((res, rej) => {
       const userForUpdating = this.userList.find((user) => user.id === id);
       if (!userForUpdating) {
-        rej();
+        rej(new ManualError(HTTPStatusCodes.NOT_FOUND, ErrorMessages.ID_NOT_FOUND));
       }
       const updatedUser = { ...user, id };
-      const index = this.userList.indexOf(updatedUser);
-      this.userList[index] = updatedUser;
+      this.userList.splice(this.userList.indexOf(userForUpdating!), 1, updatedUser);
       res(updatedUser);
     });
   }

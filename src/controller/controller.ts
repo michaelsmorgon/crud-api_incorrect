@@ -16,6 +16,7 @@ export const controller = () => {
         throw new ManualError(HTTPStatusCodes.NOT_FOUND, ErrorMessages.INVALID_URL);
       }
       const id = getId(url);
+      let user = null;
       switch(method) {
         case "GET":
           let userList: User[] | User;
@@ -34,7 +35,7 @@ export const controller = () => {
           if (isUrlCorrect(url) && id !== null) {
             throw new ManualError(HTTPStatusCodes.NOT_FOUND, ErrorMessages.INVALID_URL);
           }
-          const user = await getBody(req);
+          user = await getBody(req);
           const newUser = await userStore.create(user);
           sendResponse(res, {
             statusCode: HTTPStatusCodes.CREATED,
@@ -42,6 +43,22 @@ export const controller = () => {
           });
           break;
         case "PUT":
+          if (isUrlCorrect(url) && id === null) {
+            throw new ManualError(HTTPStatusCodes.NOT_FOUND, ErrorMessages.INVALID_URL);
+          }
+          if (id) {
+            user = await getBody(req);
+            const updatedUser = await userStore.update(id, user);
+            sendResponse(res, {
+              statusCode: HTTPStatusCodes.OK,
+              data: updatedUser,
+            });
+          } else {
+            sendResponse(res, {
+              statusCode: HTTPStatusCodes.BAD_REQUEST,
+              message: ErrorMessages.INVALID_DATA
+            });
+          }
           break;
         case "DELETE":
           if (isUrlCorrect(url) && id === null) {
