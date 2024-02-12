@@ -33,15 +33,26 @@ export class UserStore {
   async delete(id: string): Promise<string> {
     console.log(`Request method: DELETE. Id: ${id}`);
     return new Promise((res, rej) => {
-      console.log(1111);
       const userForDeletion = this.userList.find((user) => user.id === id);
-      console.log(userForDeletion, this.userList);
       if (userForDeletion) {
         this.userList = this.userList.filter((data) => data.id === id);
-        console.log(this.userList);
         res('Successfully deleted');
       }
       rej(new ManualError(HTTPStatusCodes.NOT_FOUND, ErrorMessages.ID_NOT_FOUND));
+    });
+  }
+
+  async update(id: string, user: UserInfo): Promise<User> {
+    console.log(`Request method: PUT. Id: ${id}. INFO: ${JSON.stringify(user)}`);
+    return new Promise((res, rej) => {
+      const userForUpdating = this.userList.find((user) => user.id === id);
+      if (!userForUpdating) {
+        rej();
+      }
+      const updatedUser = { ...user, id };
+      const index = this.userList.indexOf(updatedUser);
+      this.userList[index] = updatedUser;
+      res(updatedUser);
     });
   }
 }
