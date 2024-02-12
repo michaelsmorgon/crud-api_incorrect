@@ -15,18 +15,9 @@ export const controller = () => {
       if (!url || !isUrlCorrect(url)) {
         throw new ManualError(HTTPStatusCodes.NOT_FOUND, ErrorMessages.INVALID_URL);
       }
+      const id = getId(url);
       switch(method) {
         case "GET":
-          let id = null;
-          try {
-            id = getId(url);
-          } catch (error) {
-            const responseInfo: responseData = {
-              statusCode: HTTPStatusCodes.BAD_REQUEST,
-              message: ErrorMessages.INVALID_DATA,
-            }
-            sendResponse(res, responseInfo);
-          }
           let userList: User[] | User;
           if (id) {
             userList = await userStore.getById(id);
@@ -40,6 +31,9 @@ export const controller = () => {
           sendResponse(res, responseInfo);
           break;
         case "POST":
+          if (isUrlCorrect(url) && id !== null) {
+            throw new ManualError(HTTPStatusCodes.NOT_FOUND, ErrorMessages.INVALID_URL);
+          }
           const user = await getBody(req);
           const newUser = await userStore.create(user);
           sendResponse(res, {
@@ -50,6 +44,21 @@ export const controller = () => {
         case "PUT":
           break;
         case "DELETE":
+          if (isUrlCorrect(url) && id === null) {
+            throw new ManualError(HTTPStatusCodes.NOT_FOUND, ErrorMessages.INVALID_URL);
+          }
+          if (id) {
+            const result = await userStore.delete(id);
+            sendResponse(res, {
+              statusCode: HTTPStatusCodes.NO_CONTENT,
+              message: result,
+            });
+          } else {
+            sendResponse(res, {
+              statusCode: HTTPStatusCodes.BAD_REQUEST,
+              message: ErrorMessages.INVALID_DATA
+            });
+          }
           break;
         default:
           sendResponse(res, {

@@ -14,6 +14,7 @@ export enum ErrorMessages {
   INVALID_URL = 'Invalid URL',
   INTERNAL_ERROR = 'Internal server error',
   INVALID_DATA = 'Invalid user data',
+  INVALID_USER_ID = 'Invalid user id (is not UUID format)',
   ID_NOT_FOUND = 'User was not found with this id',
 }
 

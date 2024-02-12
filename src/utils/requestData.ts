@@ -23,7 +23,7 @@ export const getId = (url: string): string | null => {
     return id ;
   }
 
-  throw new Error(ErrorMessages.INVALID_DATA);
+  throw new ManualError(HTTPStatusCodes.BAD_REQUEST, ErrorMessages.INVALID_USER_ID);
 }
 
 export const getBody = async (req: IncomingMessage): Promise<UserInfo> => {
